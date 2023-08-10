@@ -1,6 +1,7 @@
 #!/bin/usr/python3
 
 import cmd
+import models
 
 class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb) "
@@ -19,6 +20,132 @@ class HBNBCommand(cmd.Cmd):
 
     def help_EOF(self):
         print("Exit the program")
+
+    
+    def do_create(self, args):
+        """Create a new instance of BaseModel, save it to JSON file, and print id"""
+        if not args:
+            print("** class name missing **")
+            return
+
+        try:
+            new_instance = eval(args)()
+            new_instance.save()
+            print(new_instance.id)
+        except NameError:
+            print("** class doesn't exist **")
+
+    
+    def do_show(self, args):
+        """Print the string representation of an instance"""
+        args_list = args.split()
+        if not args_list:
+            print("** class name missing **")
+            return
+
+        try:
+            class_name = args_list[0]
+            instance_id = args_list[1]
+            key = "{}.{}".format(class_name, instance_id)
+            if key in models.storage.all():
+                print(models.storage.all()[key])
+            else:
+                print("** no instance found **")
+        except IndexError:
+            if args_list[0] not in models.class_names:
+                print("** class doesn't exist **")
+            else:
+                print("** instance id missing **")
+
+
+    def do_destroy(self, args):
+        """Delete an instance based on the class name and id"""
+        args_list = args.split()
+        if not args_list:
+            print("** class name missing **")
+            return
+
+        try:
+            class_name = args_list[0]
+            instance_id = args_list[1]
+            key = "{}.{}".format(class_name, instance_id)
+            if key in models.storage.all():
+                del models.storage.all()[key]
+                models.storage.save()
+            else:
+                print("** no instance found **")
+        except IndexError:
+            if args_list[0] not in models.class_names:
+                print("** class doesn't exist **")
+            else:
+                print("** instance id missing **")
+
+    def do_all(self, args):
+        """Print string representation of all instances or instances of a class"""
+        instances = models.storage.all()
+        if not args:
+            print([str(value) for value in instances.values()])
+            return
+
+        args_list = args.split()
+        if args_list[0] not in models.class_names:
+            print("** class doesn't exist **")
+            return
+
+        print([str(value) for key, value in instances.items() if args_list[0] in key])
+
+
+    def do_update(self, args):
+        """Update an instance's attribute value based on the class name and id"""
+        args_list = args.split()
+        if not args_list:
+            print("** class name missing **")
+            return
+
+        try:
+            class_name = args_list[0]
+            instance_id = args_list[1]
+            key = "{}.{}".format(class_name, instance_id)
+            if key not in models.storage.all():
+                print("** no instance found **")
+                return
+
+            if len(args_list) < 3:
+                print("** attribute name missing **")
+                return
+
+            if len(args_list) < 4:
+                print("** value missing **")
+                return
+
+            if args_list[0] not in models.class_names:
+                print("** class doesn't exist **")
+                return
+
+            attribute_name = args_list[2]
+            if attribute_name in ["id", "created_at", "updated_at"]:
+                print("** cannot update reserved attribute **")
+                return
+
+            if hasattr(models.storage.all()[key], attribute_name):
+                attribute_type = type(getattr(models.storage.all()[key], attribute_name))
+                try:
+                    attribute_value = attribute_type(args_list[3])
+                except ValueError:
+                    print("** invalid value **")
+                    return
+                setattr(models.storage.all()[key], attribute_name, attribute_value)
+                models.storage.all()[key].save()
+            else:
+                print("** attribute doesn't exist **")
+
+        except IndexError:
+            print("** instance id missing **")
+
+
+
+
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
