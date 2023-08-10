@@ -2,6 +2,7 @@
 
 import cmd
 import models
+from models.user import User
 
 class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb) "
@@ -23,7 +24,7 @@ class HBNBCommand(cmd.Cmd):
 
     
     def do_create(self, args):
-        """Create a new instance of BaseModel, save it to JSON file, and print id"""
+        """Create a new instance of User or BaseModel, save it, and print id"""
         if not args:
             print("** class name missing **")
             return
@@ -35,9 +36,8 @@ class HBNBCommand(cmd.Cmd):
         except NameError:
             print("** class doesn't exist **")
 
-    
     def do_show(self, args):
-        """Print the string representation of an instance"""
+        """Print the string representation of an instance (User or BaseModel)"""
         args_list = args.split()
         if not args_list:
             print("** class name missing **")
@@ -57,9 +57,8 @@ class HBNBCommand(cmd.Cmd):
             else:
                 print("** instance id missing **")
 
-
     def do_destroy(self, args):
-        """Delete an instance based on the class name and id"""
+        """Delete an instance (User or BaseModel) based on class name and id"""
         args_list = args.split()
         if not args_list:
             print("** class name missing **")
@@ -81,7 +80,7 @@ class HBNBCommand(cmd.Cmd):
                 print("** instance id missing **")
 
     def do_all(self, args):
-        """Print string representation of all instances or instances of a class"""
+        """Print string representation of instances (User or BaseModel)"""
         instances = models.storage.all()
         if not args:
             print([str(value) for value in instances.values()])
@@ -94,9 +93,8 @@ class HBNBCommand(cmd.Cmd):
 
         print([str(value) for key, value in instances.items() if args_list[0] in key])
 
-
     def do_update(self, args):
-        """Update an instance's attribute value based on the class name and id"""
+        """Update an instance's attribute value based on class name and id"""
         args_list = args.split()
         if not args_list:
             print("** class name missing **")
@@ -142,13 +140,7 @@ class HBNBCommand(cmd.Cmd):
         except IndexError:
             print("** instance id missing **")
 
-
-
-
-
-
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
-
 
 
