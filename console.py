@@ -2,6 +2,12 @@
 
 import cmd
 import models
+from models.base_model import BaseModel
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
+from models.place import Place
 from models.user import User
 
 class HBNBCommand(cmd.Cmd):
@@ -142,5 +148,3 @@ class HBNBCommand(cmd.Cmd):
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
-
-
