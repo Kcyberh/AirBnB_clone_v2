@@ -24,3 +24,22 @@ class BaseModel:
         """ Class method to display in human readable BaseModel instance """
         class_name = self.__class__.__name__
         return "[{}] ({}) {}".format(class_name, self.id, self.__dict__)
+
+    def save(self):
+        """Save the instance to storage and update updated_at"""
+        self.updated_at = datetime.now()
+        storage.save()
+
+    def __init__(self, *args, **kwargs):
+        if kwargs:
+            # ... (existing code)
+
+            # If it's a new instance, add a call to the new method on storage
+            if 'id' not in kwargs:
+                storage.new(self)
+
+
+
+
+
+
