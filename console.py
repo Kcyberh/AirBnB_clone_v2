@@ -95,17 +95,13 @@ class HBNBCommand(cmd.Cmd):
 
     def do_all(self, args):
         """Print string representation of instances (User or BaseModel)"""
-        instances = models.storage.all()
-        if not args:
-            print([str(value) for value in instances.values()])
-            return
+        instances = self.classes[args] if args in self.classes else None
 
-        args_list = args.split()
-        if args_list[0] not in models.class_names:
+        if instances is None:
             print("** class doesn't exist **")
             return
 
-        print([str(value) for key, value in instances.items() if args_list[0] in key])
+        print([str(value) for key, value in instances.items()])
 
     def do_update(self, args):
         """Update an instance's attribute value based on class name and id"""
