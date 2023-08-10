@@ -1,7 +1,6 @@
 #!/bin/usr/python3
 
 import cmd
-import models
 from models.base_model import BaseModel
 from models.state import State
 from models.city import City
@@ -13,6 +12,15 @@ from models.user import User
 class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb) "
 
+    classes = {
+        'Amenity': Amenity,
+        'BaseModel': BaseModel,
+        'City': City,
+        'Place': Place,
+        'Review': Review,
+        'State': State,
+        'User': User
+    }
     def do_quit(self, args):
         """Exit the program"""
         return True
