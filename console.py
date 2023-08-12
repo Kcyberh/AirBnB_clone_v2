@@ -1,193 +1,249 @@
 #!/usr/bin/python3
+"""
+A command line interpreter for AirBnB clone
+"""
 
 import cmd
+import re
+import models
 from models.base_model import BaseModel
+from models.user import User
 from models.state import State
 from models.city import City
+from models.place import Place
 from models.amenity import Amenity
 from models.review import Review
-from models.place import Place
-from models.user import User
-from models import storage
 
 class HBNBCommand(cmd.Cmd):
-    prompt = "(hbnb) "
+    """A console class for the AirBnB-Clone project"""
 
+    prompt: str = '(hbnb) '
     classes = {
-        'Amenity': Amenity,
         'BaseModel': BaseModel,
+        'User': User,
+        'State': State,
         'City': City,
         'Place': Place,
-        'Review': Review,
-        'State': State,
-        'User': User
+        'Amenity': Amenity,
+        'Review': Review
     }
 
-    def do_quit(self, args):
-        """Exit the program"""
-        return True
+    @staticmethod
+    def parse(arg, id_delimiter=" "):
+        """
+        Parse input arguments into a list
+        Args:
+            arg (str): The input arguments
+            id_delimiter (str): Delimiter for splitting arguments
+        Returns:
+            list: List of parsed arguments
+        """
+        arg_list = arg.split(id_delimiter)
+        return [x.strip() for x in arg_list if x]
 
-    def do_EOF(self, args):
-        """Exit the program"""
-        print("")  # Print a newline before exiting
+    def do_quit(self, arg):
+        """
+        Quit command to exit the program
+        """
         return True
 
     def help_quit(self):
-        print("Exit the program")
+        """
+        Print help for the quit command
+        """
+        print("Quit command to exit the program\n")
 
-    def help_EOF(self):
-        print("Exit the program")
+    def do_EOF(self, arg):
+        """
+        EOF signal to exit the program
+        """
+        print("")
+        return True
 
-    def do_create(self, args):
-        """Create a new instance of User or BaseModel, save it, and print id"""
+    def do_create(self, arg):
+        """
+        Create a new instance of a class, save it, and print its id
+        """
+        args = self.parse(arg)
         if not args:
             print("** class name missing **")
             return
 
-        try:
-            new_instance = eval(args)()
+        class_name = args[0]
+        if class_name in self.classes:
+            new_instance = self.classes[class_name]()
             new_instance.save()
             print(new_instance.id)
-        except NameError:
+        else:
             print("** class doesn't exist **")
 
-    def do_show(self, args):
-        """Retrieve an instance based on its ID"""
-        args_list = args.split()
-        if not args_list:
+    def help_create(self):
+        """
+        Print help for the create command
+        """
+        print("Create a new instance of a class, save it, and print its id")
+
+    def do_show(self, arg):
+        """
+        Display the string representation of an instance
+        based on the class name and id
+        """
+        args = self.parse(arg)
+        if len(args) < 2:
             print("** class name missing **")
             return
 
-        try:
-            class_name = args_list[0]
-            if class_name in self.classes:
-                if len(args_list) < 2:
-                    print("** instance id missing **")
-                    return
+        class_name = args[0]
+        if class_name in self.classes:
+            if len(args) < 2:
+                print("** instance id missing **")
+                return
 
-                instance_id = args_list[1]
-                key = "{}.{}".format(class_name, instance_id)
-                instances = storage.all()
+            instance_id = args[1]
+            key = "{}.{}".format(class_name, instance_id)
+            instances = models.storage.all()
 
-                if key in instances:
-                    print(instances[key])
-                else:
-                    print("** no instance found **")
+            if key in instances:
+                print(instances[key])
             else:
-                print("** class doesn't exist **")
-        except IndexError:
-            print("** instance id missing **")
+                print("** no instance found **")
+        else:
+            print("** class doesn't exist **")
 
-    def do_destroy(self, args):
-        """Destroy an instance based on its ID"""
-        args_list = args.split()
-        if not args_list:
+    def help_show(self):
+        """
+        Print help for the show command
+        """
+        print("Display the string representation of an instance based on the class name and id")
+
+    def do_destroy(self, arg):
+        """
+        Delete an instance based on the class name and id
+        """
+        args = self.parse(arg)
+        if len(args) < 2:
             print("** class name missing **")
             return
 
-        try:
-            class_name = args_list[0]
-            if class_name in self.classes:
-                if len(args_list) < 2:
-                    print("** instance id missing **")
-                    return
+        class_name = args[0]
+        if class_name in self.classes:
+            if len(args) < 2:
+                print("** instance id missing **")
+                return
 
-                instance_id = args_list[1]
-                key = "{}.{}".format(class_name, instance_id)
-                instances = storage.all()
+            instance_id = args[1]
+            key = "{}.{}".format(class_name, instance_id)
+            instances = models.storage.all()
 
-                if key in instances:
-                    del instances[key]
-                    storage.save()
-                else:
-                    print("** no instance found **")
+            if key in instances:
+                del instances[key]
+                models.storage.save()
             else:
-                print("** class doesn't exist **")
-        except IndexError:
-            print("** instance id missing **")
+                print("** no instance found **")
+        else:
+            print("** class doesn't exist **")
 
-    def do_all(self, args):
-        """Print string representation of instances (User or BaseModel)"""
-        instances = storage.all()
+    def help_destroy(self):
+        """
+        Print help for the destroy command
+        """
+        print("Delete an instance based on the class name and id")
+
+    def do_all(self, arg):
+        """
+        Print string representations of instances
+        """
+        args = self.parse(arg)
+        instances = models.storage.all()
+
         if not args:
             print([str(value) for value in instances.values()])
         else:
-            args_list = args.split()
-            class_name = args_list[0]
+            class_name = args[0]
             if class_name in self.classes:
                 print([str(value) for value in instances.values() if isinstance(value, self.classes[class_name])])
             else:
                 print("** class doesn't exist **")
 
-    def do_update(self, args):
-        """Update an instance's attribute value based on class name and id or dictionary"""
-        args_list = args.split()
-        if not args_list:
+    def help_all(self):
+        """
+        Print help for the all command
+        """
+        print("Print string representations of instances")
+
+    def do_update(self, arg):
+        """
+        Update an instance's attribute value based on class name and id
+        """
+        args = self.parse(arg)
+        if len(args) < 3:
             print("** class name missing **")
             return
 
-        try:
-            class_name = args_list[0]
-            if class_name not in self.classes:
-                print("** class doesn't exist **")
-                return
+        class_name = args[0]
+        if class_name not in self.classes:
+            print("** class doesn't exist **")
+            return
 
-            if len(args_list) < 2:
-                print("** instance id missing **")
-                return
-
-            instance_id = args_list[1]
-            key = "{}.{}".format(class_name, instance_id)
-            instances = storage.all()
-
-            if key in instances:
-                if len(args_list) < 3:
-                    print("** attribute name missing **")
-                    return
-
-                if args_list[2] == "{" and args_list[-1] == "}":
-                    try:
-                        update_dict = eval(' '.join(args_list[2:]))
-                        for k, v in update_dict.items():
-                            setattr(instances[key], k, v)
-                        instances[key].save()
-                    except Exception:
-                        print("** invalid dictionary **")
-                        return
-                else:
-                    if len(args_list) < 4:
-                        print("** value missing **")
-                        return
-
-                    attribute_name = args_list[2]
-                    attribute_value = args_list[3]
-                    setattr(instances[key], attribute_name, attribute_value)
-                    instances[key].save()
-            else:
-                print("** no instance found **")
-        except IndexError:
+        if len(args) < 4:
             print("** instance id missing **")
+            return
 
-    def do_count(self, args):
-        """Count the number of instances of a class"""
-        args_list = args.split()
-        if not args_list:
+        instance_id = args[1]
+        key = "{}.{}".format(class_name, instance_id)
+        instances = models.storage.all()
+
+        if key in instances:
+            attribute_name = args[2]
+            if len(args) < 5:
+                print("** value missing **")
+                return
+
+            attribute_value = args[3]
+            setattr(instances[key], attribute_name, attribute_value)
+            instances[key].save()
+        else:
+            print("** no instance found **")
+
+    def help_update(self):
+        """
+        Print help for the update command
+        """
+        print("Update an instance's attribute value based on class name and id")
+
+    def do_count(self, arg):
+        """
+        Count the number of instances of a class
+        """
+        args = self.parse(arg)
+        if not args:
             print("** class name missing **")
             return
 
-        try:
-            class_name = args_list[0]
-            if class_name in self.classes:
-                instances = storage.all()
-                count = sum(1 for value in instances.values() if isinstance(value, self.classes[class_name]))
-                print(count)
-            else:
-                print("** class doesn't exist **")
-        except IndexError:
-            print("** class name missing **")
+        class_name = args[0]
+        if class_name in self.classes:
+            instances = models.storage.all()
+            count = sum(1 for value in instances.values() if isinstance(value, self.classes[class_name]))
+            print(count)
+        else:
+            print("** class doesn't exist **")
+
+    def help_count(self):
+        """
+        Print help for the count command
+        """
+        print("Count the number of instances of a class")
+
+    def emptyline(self):
+        """
+        Do nothing upon receiving an empty line
+        """
+        pass
 
     def default(self, line):
-        """Custom default behavior for commands"""
+        """
+        Custom default behavior for commands
+        """
         parts = line.split('.')
         if len(parts) == 2:
             class_name = parts[0]
