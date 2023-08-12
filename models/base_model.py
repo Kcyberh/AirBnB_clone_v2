@@ -1,4 +1,4 @@
-#!/bin/usr/python3
+#!/usr/bin/python3
 """file containing basemodel class"""
 from datetime import datetime
 import models
@@ -20,6 +20,9 @@ class BaseModel:
                 elif key != "__class__":
                     setattr(self, key, value)
 
+        if kwargs and 'id' not in kwargs:
+            models.storage.new(self)
+
     def __str__(self):
         """ Class method to display in human readable BaseModel instance """
         class_name = self.__class__.__name__
@@ -28,18 +31,4 @@ class BaseModel:
     def save(self):
         """Save the instance to storage and update updated_at"""
         self.updated_at = datetime.now()
-        storage.save()
-
-    def __init__(self, *args, **kwargs):
-        if kwargs:
-            # ... (existing code)
-
-            # If it's a new instance, add a call to the new method on storage
-            if 'id' not in kwargs:
-                storage.new(self)
-
-
-
-
-
-
+        models.storage.save()
