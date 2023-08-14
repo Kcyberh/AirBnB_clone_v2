@@ -50,7 +50,8 @@ class FileStorage:
                 for key, value in loaded_data.items():
                     cls_name = value["__class__"]
                     del value["__class__"]
-                    self.new(eval(cls_name)(**value))
+                    obj_instance = eval(cls_name)(**value)
+                    self.new(obj_instance)
         except FileNotFoundError:
             return
 
