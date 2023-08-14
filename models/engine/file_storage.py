@@ -32,32 +32,32 @@ class FileStorage:
             obj (BaseModel): The object to add.
         """
         obj_key = "{}.{}".format(obj.__class__.__name__, obj.id)
-        FileStorage.__objects[obj_key] = obj
+        self.__objects[obj_key] = obj
+        self.save()  # Save the updated __objects immediately
 
     def save(self):
         """Serializes __objects to JSON format and saves it to __file_path."""
         serialized_objects = {
-            key: value.to_dict() for key, value in FileStorage.__objects.items()
+            key: value.to_dict() for key, value in self.__objects.items()
         }
-        with open(FileStorage.__file_path, "w") as file:
+        with open(self.__file_path, "w") as file:
             json.dump(serialized_objects, file)
 
     def reload(self):
         """Deserializes JSON data from __file_path and populates __objects."""
         try:
-            with open(FileStorage.__file_path, "r") as file:
+            with open(self.__file_path, "r") as file:
                 loaded_data = json.load(file)
                 for key, value in loaded_data.items():
                     cls_name = value["__class__"]
                     del value["__class__"]
-                    obj_instance = eval(cls_name)(**value)
-                    self.new(obj_instance)
+                    self.new(eval(cls_name)(**value))
         except FileNotFoundError:
             return
 
     def test_file_path(self):
         """Test method to meet requirement."""
-        FileStorage.__file_path = "OK"
+        self.__file_path = "OK"
 
     def test_all(self):
         """Test method to meet requirement."""
